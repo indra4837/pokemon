@@ -40,7 +40,7 @@ def create_app(config_name):
                 _ = next(reader)
 
                 for id, firstName, lastName, dateOfBirth in reader:
-                    print(id, firstName, lastName, dateOfBirth)
+                    # print(id, firstName, lastName, dateOfBirth)
 
                     if None in (id, firstName, lastName, dateOfBirth):
                         # TODO: handle incomplete data (Current: Method 1)
@@ -71,10 +71,55 @@ def create_app(config_name):
                 # TODO: Pop from redis cache and save update table
                 # for i in overallData:
                 #     i.save()
-            #     success = True
+                #     success = True
 
-            response = jsonify({"success": success})
-            response.status_code = 201 if success else 400
+                response = jsonify({"success": success})
+                response.status_code = 201 if success else 400
+
+                return response
+            elif dataType == "pokemon":
+                overallData = []
+                success = True
+
+                reader = csv.reader(stream)
+                _ = next(reader)
+
+                for id, nickname, species, level, owner, dateOfOwnership in reader:
+                    # print(id, nickname, species, level, owner, dateOfOwnership)
+
+                    if None in (id, nickname, species, level, owner, dateOfOwnership):
+                        # TODO: handle incomplete data (Current: Method 1)
+                        # 1. Skip this row
+                        # 2. Dont accept entire csv file
+                        continue
+
+                    pokemon = Pokemon(
+                        id=id,
+                        nickname=nickname,
+                        species=species,
+                        level=level,
+                        owner=owner,
+                        dateOfOwnership=dateOfOwnership,
+                    )
+
+                    # TODO: implement redis cache to preload csv before saving whole item
+                    overallData.append(pokemon)
+
+                    success = True
+
+                # TODO: Pop from redis cache and save update table
+                # for i in overallData:
+                #     i.save()
+                #     success = True
+
+                response = jsonify({"success": success})
+                response.status_code = 201 if success else 400
+
+                return response
+
+        else:
+            response = jsonify({"success": False})
+            response.status_code = 400
 
             return response
 
