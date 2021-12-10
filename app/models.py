@@ -1,4 +1,8 @@
+from datetime import date
+from sqlalchemy.dialects.postgresql import UUID
+
 from app import db
+import uuid
 
 
 class Trainer(db.Model):
@@ -11,9 +15,12 @@ class Trainer(db.Model):
     lastName = db.Column(db.String(255))
     dateOfBirth = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-    def __init__(self, name):
-        """initialize with name."""
-        self.name = name
+    def __init__(self, id, firstName, lastName, dateOfBirth):
+        """Initialize with trainer details"""
+        self.id = id
+        self.firstName = firstName
+        self.lastName = lastName
+        self.dateOfBirth = dateOfBirth
 
     def save(self):
         db.session.add(self)
@@ -43,9 +50,14 @@ class Pokemon(db.Model):
     owner = db.Column(db.String(255), db.ForeignKey("trainer.id"))
     dateOfOwnership = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-    def __init__(self, name):
-        """initialize with name."""
-        self.name = name
+    def __init__(self, id, nickname, species, level, owner, dateOfOwnership):
+        """initialize with pokemon details."""
+        self.id = id
+        self.nickname = nickname
+        self.species = species
+        self.level = level
+        self.owner = owner
+        self.dateOfOwnership = dateOfOwnership
 
     def save(self):
         db.session.add(self)
