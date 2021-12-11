@@ -1,8 +1,7 @@
-from datetime import date
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 
 from app import db
-import uuid
 
 
 class Trainer(db.Model):
@@ -13,7 +12,7 @@ class Trainer(db.Model):
     id = db.Column(db.String(255), primary_key=True)
     firstName = db.Column(db.String(255))
     lastName = db.Column(db.String(255))
-    dateOfBirth = db.Column(db.DateTime, default=db.func.current_timestamp())
+    dateOfBirth = db.Column(db.Date)
 
     def __init__(self, id, firstName, lastName, dateOfBirth):
         """Initialize with trainer details"""
@@ -26,6 +25,10 @@ class Trainer(db.Model):
         db.session.add(self)
         db.session.commit()
 
+    def update(self):
+        db.session.merge(self)
+        db.session.commit()
+
     @staticmethod
     def get_all():
         return Trainer.query.all()
@@ -35,7 +38,7 @@ class Trainer(db.Model):
         db.session.commit()
 
     def __repr__(self):
-        return "".format(self.name)
+        return "".format(self.id)
 
 
 class Pokemon(db.Model):
@@ -48,7 +51,7 @@ class Pokemon(db.Model):
     species = db.Column(db.String(255))
     level = db.Column(db.Integer)
     owner = db.Column(db.String(255), db.ForeignKey("trainer.id"))
-    dateOfOwnership = db.Column(db.DateTime, default=db.func.current_timestamp())
+    dateOfOwnership = db.Column(db.Date)
 
     def __init__(self, id, nickname, species, level, owner, dateOfOwnership):
         """initialize with pokemon details."""
@@ -62,6 +65,12 @@ class Pokemon(db.Model):
     def save(self):
         db.session.add(self)
         db.session.commit()
+        # print("test")
+
+    # FIXME: fix update method to allow upsert
+    def update(self):
+        db.session.merge(self)
+        db.session.commit()
 
     @staticmethod
     def get_all():
@@ -72,4 +81,4 @@ class Pokemon(db.Model):
         db.session.commit()
 
     def __repr__(self):
-        return "".format(self.name)
+        return "".format(self.id)
