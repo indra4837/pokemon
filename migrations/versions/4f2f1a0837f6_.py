@@ -1,8 +1,8 @@
-"""initial migration
+"""empty message
 
-Revision ID: c7695062cb60
+Revision ID: 4f2f1a0837f6
 Revises: 
-Create Date: 2021-12-09 22:03:17.998256
+Create Date: 2021-12-11 21:13:58.310582
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'c7695062cb60'
+revision = '4f2f1a0837f6'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,7 +22,7 @@ def upgrade():
     sa.Column('id', sa.String(length=255), nullable=False),
     sa.Column('firstName', sa.String(length=255), nullable=True),
     sa.Column('lastName', sa.String(length=255), nullable=True),
-    sa.Column('dateOfBirth', sa.DateTime(), nullable=True),
+    sa.Column('dateOfBirth', sa.Date(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('pokemon',
@@ -31,7 +31,7 @@ def upgrade():
     sa.Column('species', sa.String(length=255), nullable=True),
     sa.Column('level', sa.Integer(), nullable=True),
     sa.Column('owner', sa.String(length=255), nullable=True),
-    sa.Column('dateOfOwnership', sa.DateTime(), nullable=True),
+    sa.Column('dateOfOwnership', sa.Date(), nullable=True),
     sa.ForeignKeyConstraint(['owner'], ['trainer.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
