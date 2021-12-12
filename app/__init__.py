@@ -313,6 +313,62 @@ def create_app(config_name):
 
             return response
 
+    @app.route("/pokemon/", methods=["GET"])
+    def get_pokemon():
+        if request.method == "GET":
+            pokemon_id = request.args.get("pokemonId", default=None, type=str)
+            if pokemon_id is not None:
+                obj = Pokemon.get_pokemon(pokemon_id)
+
+                if len(obj) == 0:
+                    response = jsonify("No Pokemon found")
+                    response.status_code = 404
+
+                    return response
+
+                poke_obj = {
+                    "id": obj.id,
+                    "nickname": obj.nickname,
+                    "species": obj.species,
+                    "level": obj.level,
+                    "owner": obj.owner,
+                    "dateOfOwnership": obj.dateOfOwnership,
+                }
+
+                response = jsonify(poke_obj)
+                response.status_code = 200
+
+                return response
+
+            page = request.args.get("page", default=1, type=int)
+            limit = request.args.get("limit", default=5, type=int)
+            pokemons = Pokemon.get_all()
+            total_pages = len(pokemons) // limit
+            results = []
+            start = 0 + page * limit
+            end = min(start + limit, len(pokemons))
+
+            for pokemon in pokemons:
+                obj = {
+                    "id": pokemon.id,
+                    "nickname": pokemon.nickname,
+                    "species": pokemon.species,
+                    "level": pokemon.level,
+                    "owner": pokemon.owner,
+                    "dateOfOwnership": pokemon.dateOfOwnership,
+                }
+                results.append(obj)
+
+            results = results[start:end]
+
+            response = jsonify(
+                {"pokemons": results, "page": page, "total_page": total_pages}
+            )
+
+            response.status_code = 200
+
+            return response
+
     return app
 
 
