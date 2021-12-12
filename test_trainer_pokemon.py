@@ -330,6 +330,98 @@ class PokemonTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertTrue(res_data["success"])
 
+    def test_create_pokemon(self):
+        """Test API can create pokemon data (POST request)"""
+        valid_data = {
+            "pokemonId": "pikachu20",
+            "nickname": "test",
+            "species": "test",
+            "level": "20",
+            "owner": "trainer2",
+            "dateOfOwnership": "19-10-2000",
+        }
+
+        # check creation using valid data
+        res = self.client().post(
+            f"/pokemon/create/?pokemonId={valid_data['pokemonId']}&nickname={valid_data['nickname']}&species={valid_data['species']}&level={valid_data['level']}&owner={valid_data['owner']}&dateOfOwnership={valid_data['dateOfOwnership']}",
+        )
+
+        data = json.loads(res.get_data(as_text=True))
+
+        self.assertEqual(res.status_code, 201)
+        self.assertTrue(data["success"])
+
+        invalid_data = {
+            "pokemonId": "trainer20",
+            "nickname": "test",
+            "species": "test",
+        }
+
+        # check creation using invalid data
+        res = self.client().post(
+            f"/pokemon/create/?pokemonId={invalid_data['pokemonId']}&nickname={invalid_data['nickname']}&species={invalid_data['species']}",
+        )
+
+        data = json.loads(res.get_data(as_text=True))
+
+        self.assertEqual(res.status_code, 400)
+        self.assertFalse(data["success"])
+
+    def test_delete_pokemon(self):
+        """Test API can delete pokemon data (DELETE request)"""
+        with open(self.pokemon_csv, "rb") as f:
+            res = self.client().post(
+                "/upload/",
+                content_type="multipart/form-data",
+                data={"data": f, "type": "pokemon"},
+            )
+
+        data = {
+            "pokemonId": "pikachu4",
+        }
+
+        res = self.client().delete(
+            f"/pokemon/?pokemonId={data['pokemonId']}",
+        )
+
+        self.assertEqual(res.status_code, 200)
+        res = self.client().get(f"/pokemon/?pokemonId={data['pokemonId']}")
+        self.assertEqual(res.status_code, 404)
+
+    def test_update_pokemon(self):
+        """Test API can update pokemon data (PUT request)"""
+        with open(self.pokemon_csv, "rb") as f:
+            res = self.client().post(
+                "/upload/",
+                content_type="multipart/form-data",
+                data={"data": f, "type": "pokemon"},
+            )
+
+        data = {
+            "pokemonId": "pikachu4",
+            "nickname": "coolkid96",
+            "species": "woke",
+        }
+
+        res = self.client().put(
+            f"/pokemon/?pokemonId={data['pokemonId']}&nickname={data['nickname']}&species={data['species']}"
+        )
+
+        self.assertEqual(res.status_code, 200)
+        res_data = json.loads(res.get_data(as_text=True))
+        self.assertTrue(res_data["success"])
+
+        with self.app.app_context():
+            # pokemon = (
+            #     db.session.query(Pokemon)
+            #     .filter(Pokemon.id == data["pokemonId"])
+            #     .first()
+            # )
+            pokemon = Pokemon.get_pokemon(data["pokemonId"])
+        res_data = json.loads(res.get_data(as_text=True))
+        self.assertEqual("coolkid96", pokemon.nickname)
+        self.assertEqual("woke", pokemon.species)
+
     def tearDown(self):
         """teardown all initialized variables."""
         with self.app.app_context():
