@@ -7,7 +7,7 @@ import csv
 from datetime import datetime
 
 from app import create_app, db
-from app.models import Trainer
+from app.models import Pokemon, Trainer
 
 
 class TrainerTestCase(unittest.TestCase):
@@ -188,56 +188,59 @@ class PokemonTestCase(unittest.TestCase):
         self.assertEqual(len(data["pokemons"]), 5)
         self.assertEqual(data["page"], page)
 
+    def test_exchange_pokemon(self):
+        """Test API can exchange Pokemons (POST request)"""
+        with open(self.pokemon_csv, "rb") as f:
+            res = self.client().post(
+                "/upload/",
+                content_type="multipart/form-data",
+                data={"data": f, "type": "pokemon"},
+            )
+
+        self.assertEqual(res.status_code, 201)
+
+        page, limit = 1, 5
+
+        # FIXME: use query params instead of formatting url
+        data = {
+            "trainerA": "trainer1",
+            "trainerB": "trainer2",
+            "pokemonsA": "pikachu4,pikachu3,pikachu2",
+            "pokemonsB": "pikachu5,pikachu6",
+        }
+
+        res = self.client().post(
+            f"/exchange/?trainerA={data['trainerA']}&trainerB={data['trainerB']}&pokemonsA={data['pokemonsA']}&pokemonsB={data['pokemonsB']}",
+        )
+
+        res_data = json.loads(res.get_data(as_text=True))
+
+        # query pokemon table to check if exchange works
+        with self.app.app_context():
+            pokemonsA = data["pokemonsA"].split(",")
+            pokemonsB = data["pokemonsB"].split(",")
+
+            for a in pokemonsA:
+                pokemon_obj_a = (
+                    db.session.query(Pokemon).filter(Pokemon.id == a).first()
+                )
+                self.assertEqual(pokemon_obj_a.owner, data["trainerB"])
+
+            for b in pokemonsB:
+                pokemon_obj_b = (
+                    db.session.query(Pokemon).filter(Pokemon.id == b).first()
+                )
+                self.assertEqual(pokemon_obj_b.owner, data["trainerA"])
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res_data["success"])
+
     def tearDown(self):
         """teardown all initialized variables."""
         with self.app.app_context():
             # drop all tables
             db.session.remove()
             db.drop_all()
-
-    # def test_trainer_creation(self):
-    #     """Test API can create a trainer (POST request)"""
-    #     res = self.client().post("/trainers/", data=self.trainer)
-    #     self.assertEqual(res.status_code, 201)
-    #     self.assertIn("Go to Borabora", str(res.data))
-
-    # def test_api_can_get_all_trainers(self):
-    #     """Test API can get a trainer (GET request)."""
-    #     res = self.client().post("/trainers/", data=self.trainer)
-    #     self.assertEqual(res.status_code, 201)
-    #     res = self.client().get("/trainers/")
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertIn("Go to Borabora", str(res.data))
-
-    # def test_api_can_get_trainer_by_id(self):
-    #     """Test API can get a single trainer by using it's id."""
-    #     rv = self.client().post("/trainers/", data=self.trainer)
-    #     self.assertEqual(rv.status_code, 201)
-    #     result_in_json = json.loads(rv.data.decode("utf-8").replace("'", '"'))
-    #     result = self.client().get("/trainers/{}".format(result_in_json["id"]))
-    #     self.assertEqual(result.status_code, 200)
-    #     self.assertIn("Go to Borabora", str(result.data))
-
-    # def test_trainer_can_be_edited(self):
-    #     """Test API can edit an existing trainer. (PUT request)"""
-    #     rv = self.client().post("/trainers/", data={"name": "Eat, pray and love"})
-    #     self.assertEqual(rv.status_code, 201)
-    #     rv = self.client().put(
-    #         "/trainers/1", data={"name": "Dont just eat, but also pray and love :-)"}
-    #     )
-    #     self.assertEqual(rv.status_code, 200)
-    #     results = self.client().get("/trainers/1")
-    #     self.assertIn("Dont just eat", str(results.data))
-
-    # def test_trainer_deletion(self):
-    #     """Test API can delete an existing trainer. (DELETE request)."""
-    #     rv = self.client().post("/trainers/", data={"name": "Eat, pray and love"})
-    #     self.assertEqual(rv.status_code, 201)
-    #     res = self.client().delete("/trainers/1")
-    #     self.assertEqual(res.status_code, 200)
-    #     # Test to see if it exists, should return a 404
-    #     result = self.client().get("/trainers/1")
-    #     self.assertEqual(result.status_code, 404)
 
 
 # Make the tests conveniently executable
