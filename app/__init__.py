@@ -1,13 +1,17 @@
 import csv
 import io
 import datetime
+import json
 
 import redis
 
 from flask_api import FlaskAPI
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask import request, jsonify, abort
+from flask import request, jsonify
+
+from sqlalchemy.sql import text
+from sqlalchemy import column
 
 # local import
 from instance.config import app_config
@@ -51,7 +55,7 @@ def create_app(config_name):
             if dataType == "trainer":
                 message = "Input data not valid"  # base error message
                 success = True
-                r = redis.StrictRedis(db=0, charset="utf-8", decode_responses=True)
+                r = redis.StrictRedis(db=0, encoding="utf-8", decode_responses=True)
 
                 reader = csv.reader(stream)
                 _ = next(reader)
@@ -135,7 +139,7 @@ def create_app(config_name):
             elif dataType == "pokemon":
                 message = "Input data not valid"  # base error message
                 success = True
-                r = redis.StrictRedis(db=1, charset="utf-8", decode_responses=True)
+                r = redis.StrictRedis(db=1, encoding="utf-8", decode_responses=True)
 
                 reader = csv.reader(stream)
                 _ = next(reader)
@@ -227,6 +231,85 @@ def create_app(config_name):
         else:
             response = jsonify({"success": False, "error": "No valid payload"})
             response.status_code = 400
+
+            return response
+
+    @app.route("/trainer/", methods=["GET"])
+    def get_trainers():
+        if request.method == "GET":
+            trainer_id = request.args.get("trainerId", default=None, type=str)
+            if trainer_id is not None:
+                pokemon_objs, trainer_obj = Pokemon.get_trainer(
+                    trainer_id
+                ), Trainer.get_trainer(trainer_id)
+
+                pokemons = []
+
+                if len(pokemon_objs) == 0:
+                    response = jsonify("No trainer found")
+                    response.status_code = 404
+
+                    return response
+
+                for obj in pokemon_objs:
+                    poke_obj = {
+                        "id": obj.id,
+                        "nickname": obj.nickname,
+                        "species": obj.species,
+                        "level": obj.level,
+                        "owner": obj.owner,
+                        "dateOfOwnership": obj.dateOfOwnership,
+                    }
+                    # trainer_obj = {
+                    #     "id": i.owner,
+                    #     "firstName": i.firstName,
+                    # }
+                    pokemons.append(poke_obj)
+
+                trainer = {
+                    "firstName": trainer_obj.firstName,
+                    "lastName": trainer_obj.lastName,
+                }
+
+                response = jsonify(
+                    {
+                        "firstName": trainer_obj.firstName,
+                        "lastName": trainer_obj.lastName,
+                        "pokemons": pokemons,
+                    }
+                )
+                response.status_code = 200
+
+                return response
+
+            page = request.args.get("page", default=1, type=int)
+            limit = request.args.get("limit", default=5, type=int)
+            # page = request.data.get("page", default=1, type=int)
+            # limit = request.data.get("limit", default=5, type=int)
+            # print(page, limit)
+            trainers = Trainer.get_all()
+            # print(trainers)
+            total_pages = len(trainers) // limit
+            results = []
+            start = 0 + page * limit
+            end = min(start + limit, len(trainers))
+
+            for trainer in trainers:
+                obj = {
+                    "id": trainer.id,
+                    "firstName": trainer.firstName,
+                    "lastName": trainer.lastName,
+                    "dateOfBirth": trainer.dateOfBirth,
+                }
+                results.append(obj)
+
+            results = results[start:end]
+
+            response = jsonify(
+                {"trainers": results, "page": page, "total_page": total_pages}
+            )
+
+            response.status_code = 200
 
             return response
 
