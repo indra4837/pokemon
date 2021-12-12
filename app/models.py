@@ -31,7 +31,11 @@ class Trainer(db.Model):
 
     @staticmethod
     def get_all():
-        return Trainer.query.all()
+        return Trainer.query.order_by(Trainer.id).all()
+
+    @staticmethod
+    def get_trainer(id):
+        return Trainer.query.filter(Trainer.id == id).first()
 
     def delete(self):
         db.session.delete(self)
@@ -75,6 +79,10 @@ class Pokemon(db.Model):
     @staticmethod
     def get_all():
         return Pokemon.query.all()
+
+    @staticmethod
+    def get_trainer(id):
+        return Pokemon.query.filter(Pokemon.owner == id).all()
 
     def delete(self):
         db.session.delete(self)
