@@ -393,21 +393,6 @@ def create_app(config_name):
             pokemon_obj_b.history.append(trainer_obj_a.id)
             pokemon_obj_b.save()
 
-        # pokemon_obj_a = Pokemon.get_pokemon(pokemonsA)
-        # pokemon_obj_b = Pokemon.get_pokemon(pokemonsB)
-
-        # # perform exchange
-        # pokemon_obj_a.owner = trainer_obj_b.id
-        # pokemon_obj_b.owner = trainer_obj_a.id
-
-        # # update history with latest exchange transaction
-        # pokemon_obj_a.history.append(trainer_obj_b.id)
-        # pokemon_obj_b.history.append(trainer_obj_a.id)
-
-        # # commit changes
-        # pokemon_obj_a.save()
-        # pokemon_obj_b.save()
-
         response = jsonify({"success": True})
         response.status_code = 200
 
