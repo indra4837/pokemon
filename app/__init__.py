@@ -10,8 +10,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask import request, jsonify
 
-from sqlalchemy.sql import text
-from sqlalchemy import column
 
 # local import
 from instance.config import app_config
@@ -116,9 +114,9 @@ def create_app(config_name):
 
                     try:
                         trainer.save()
-                    except Exception as e:
-                        message = e.orig.args[0]
-                        print(message)
+                    except:
+                        message = "Unable to save data"
+
                         success = False
 
                         response = jsonify(
@@ -199,18 +197,14 @@ def create_app(config_name):
                         level=v["level"],
                         owner=v["owner"],
                         dateOfOwnership=v["dateOfOwnership"],
+                        history=[v["owner"]],
                     )
 
-                    # try saving as new entry
                     try:
                         pokemon.save()
-                    except Exception as e:
-                        message = e.orig.args[0]
-                        print(message)
-                    # try updating table if key exists
-                    try:
-                        pokemon.update()
                     except:
+                        message = "Unable to save data"
+
                         success = False
 
                         response = jsonify(
@@ -284,11 +278,7 @@ def create_app(config_name):
 
             page = request.args.get("page", default=1, type=int)
             limit = request.args.get("limit", default=5, type=int)
-            # page = request.data.get("page", default=1, type=int)
-            # limit = request.data.get("limit", default=5, type=int)
-            # print(page, limit)
             trainers = Trainer.get_all()
-            # print(trainers)
             total_pages = len(trainers) // limit
             results = []
             start = 0 + page * limit
@@ -368,6 +358,45 @@ def create_app(config_name):
             response.status_code = 200
 
             return response
+
+    @app.route("/exchange/", methods=["POST"])
+    def exchange():
+        if request.method == "POST":
+            trainerA = request.args.get("trainerA", default=None, type=str)
+            trainerB = request.args.get("trainerB", default=None, type=str)
+            pokemonsA = request.args.get("pokemonsA", default=None, type=str).split(",")
+            pokemonsB = request.args.get("pokemonsB", default=None, type=str).split(",")
+
+        if None in [trainerA, trainerB, pokemonsA, pokemonsB]:
+            response = jsonify(
+                {
+                    "success": False,
+                    "error": "Invalid input data",
+                }
+            )
+            response.status_code = 400
+
+            return response
+
+        trainer_obj_a = Trainer.get_trainer(trainerA)
+        trainer_obj_b = Trainer.get_trainer(trainerB)
+
+        for i in pokemonsA:
+            pokemon_obj_a = Pokemon.get_pokemon(i)
+            pokemon_obj_a.owner = trainer_obj_b.id
+            pokemon_obj_a.history.append(trainer_obj_b.id)
+            pokemon_obj_a.save()
+
+        for i in pokemonsB:
+            pokemon_obj_b = Pokemon.get_pokemon(i)
+            pokemon_obj_b.owner = trainer_obj_a.id
+            pokemon_obj_b.history.append(trainer_obj_a.id)
+            pokemon_obj_b.save()
+
+        response = jsonify({"success": True})
+        response.status_code = 200
+
+        return response
 
     return app
 
