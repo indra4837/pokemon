@@ -78,11 +78,15 @@ class Pokemon(db.Model):
 
     @staticmethod
     def get_all():
-        return Pokemon.query.all()
+        return Pokemon.query.order_by(Pokemon.id).all()
 
     @staticmethod
     def get_trainer(id):
         return Pokemon.query.filter(Pokemon.owner == id).all()
+
+    @staticmethod
+    def get_pokemon(id):
+        return Pokemon.query.filter(Pokemon.id == id).first()
 
     def delete(self):
         db.session.delete(self)
