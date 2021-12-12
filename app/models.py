@@ -1,5 +1,4 @@
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.ext.mutable import MutableList
 
 from app import db
 
@@ -22,11 +21,19 @@ class Trainer(db.Model):
         self.dateOfBirth = dateOfBirth
 
     def save(self):
-        db.session.add(self)
-        db.session.commit()
+        # check if row exists
+        # if exists, update. else, insert
+        exists = (
+            db.session.query(Trainer).filter(Trainer.id == self.id).first() is not None
+        )
 
-    def update(self):
-        db.session.merge(self)
+        if exists:
+            trainer = db.session.query(Trainer).filter(Trainer.id == self.id).one()
+            trainer.firstName = self.firstName
+            trainer.lastName = self.lastName
+            trainer.dateOfBirth = self.dateOfBirth
+        else:
+            db.session.add(self)
         db.session.commit()
 
     @staticmethod
@@ -56,8 +63,9 @@ class Pokemon(db.Model):
     level = db.Column(db.Integer)
     owner = db.Column(db.String(255), db.ForeignKey("trainer.id"))
     dateOfOwnership = db.Column(db.Date)
+    history = db.Column(MutableList.as_mutable(db.ARRAY(db.String)))
 
-    def __init__(self, id, nickname, species, level, owner, dateOfOwnership):
+    def __init__(self, id, nickname, species, level, owner, dateOfOwnership, history):
         """initialize with pokemon details."""
         self.id = id
         self.nickname = nickname
@@ -65,15 +73,25 @@ class Pokemon(db.Model):
         self.level = level
         self.owner = owner
         self.dateOfOwnership = dateOfOwnership
+        self.history = history
 
     def save(self):
-        db.session.add(self)
-        db.session.commit()
-        # print("test")
+        # check if row exists
+        # if exists, update. else, insert
+        exists = (
+            db.session.query(Pokemon).filter(Pokemon.id == self.id).first() is not None
+        )
 
-    # FIXME: fix update method to allow upsert
-    def update(self):
-        db.session.merge(self)
+        if exists:
+            pokemon = db.session.query(Pokemon).filter(Pokemon.id == self.id).one()
+            pokemon.nickname = self.nickname
+            pokemon.species = self.species
+            pokemon.level = self.level
+            pokemon.owner = self.owner
+            pokemon.dateOfOwnership = self.dateOfOwnership
+            pokemon.history = self.history
+        else:
+            db.session.add(self)
         db.session.commit()
 
     @staticmethod
