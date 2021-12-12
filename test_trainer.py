@@ -38,8 +38,8 @@ class TrainerTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 201)
         self.assertTrue(data["success"])
 
-    def test_get_trainers_data(self):
-        """Test API can list all trainers"""
+    def test_get_list_trainers_data(self):
+        """Test API can list all trainers (GET request)"""
         # preload db with trainer data
         with open(self.trainer_csv, "rb") as f:
             res = self.client().post(
@@ -53,9 +53,7 @@ class TrainerTestCase(unittest.TestCase):
         page, limit = 3, 5
 
         # FIXME: use query params instead of formatting url
-        res = self.client().get(
-            f"/trainer/?page={page}&limit{limit}",
-        )
+        res = self.client().get(f"/trainer/?page={page}&limit={limit}")
 
         data = json.loads(res.get_data(as_text=True))
 
@@ -67,7 +65,7 @@ class TrainerTestCase(unittest.TestCase):
         self.assertEqual(data["page"], page)
 
     def test_get_trainer_data(self):
-        """Test API can get Trainer by ID"""
+        """Test API can get Trainer by ID (GET request)"""
         # preload db with trainer data
         with open(self.trainer_csv, "rb") as f:
             res = self.client().post(
@@ -140,6 +138,55 @@ class PokemonTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 201)
         self.assertTrue(data["success"])
+
+    def test_get_pokemon(self):
+        """Test API can get Pokemon by id (GET request)"""
+        with open(self.pokemon_csv, "rb") as f:
+            res = self.client().post(
+                "/upload/",
+                content_type="multipart/form-data",
+                data={"data": f, "type": "pokemon"},
+            )
+
+        res = self.client().get(
+            "/pokemon/",
+            data={"pokemonId": "pikachu1"},
+        )
+
+        data = json.loads(res.get_data(as_text=True))
+
+        self.assertEqual(res.status_code, 200)
+        self.assertIn("name", str(data))
+        self.assertIn("species", str(data))
+        self.assertIn("level", str(data))
+        self.assertIn("owner", str(data))
+        self.assertIn("dateOfOwnership", str(data))
+
+    def test_get_list_pokemon_data(self):
+        """Test API can list all Pokemons (GET request)"""
+        # preload db with pokemon data
+        with open(self.pokemon_csv, "rb") as f:
+            res = self.client().post(
+                "/upload/",
+                content_type="multipart/form-data",
+                data={"data": f, "type": "pokemon"},
+            )
+
+        self.assertEqual(res.status_code, 201)
+
+        page, limit = 1, 5
+
+        # FIXME: use query params instead of formatting url
+        res = self.client().get(f"/pokemon/?page={page}&limit={limit}")
+
+        data = json.loads(res.get_data(as_text=True))
+
+        self.assertEqual(res.status_code, 200)
+        self.assertIn("page", str(data))
+        self.assertIn("total_page", str(data))
+        self.assertIn("pokemons", str(data))
+        self.assertEqual(len(data["pokemons"]), 5)
+        self.assertEqual(data["page"], page)
 
     def tearDown(self):
         """teardown all initialized variables."""
