@@ -61,7 +61,7 @@ class Pokemon(db.Model):
     nickname = db.Column(db.String(255))
     species = db.Column(db.String(255))
     level = db.Column(db.Integer)
-    owner = db.Column(db.String(255), db.ForeignKey("trainer.id"))
+    owner = db.Column(db.String(255), db.ForeignKey("trainer.id", ondelete="CASCADE"))
     dateOfOwnership = db.Column(db.Date)
     history = db.Column(MutableList.as_mutable(db.ARRAY(db.String)))
 
