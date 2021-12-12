@@ -8,7 +8,7 @@ import redis
 from flask_api import FlaskAPI
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask import request, jsonify
+from flask import request, jsonify, abort
 
 
 # local import
@@ -228,10 +228,10 @@ def create_app(config_name):
 
             return response
 
-    @app.route("/trainer/", methods=["GET"])
+    @app.route("/trainer/", methods=["GET", "PUT", "DELETE"])
     def get_trainers():
+        trainer_id = request.args.get("trainerId", default=None, type=str)
         if request.method == "GET":
-            trainer_id = request.args.get("trainerId", default=None, type=str)
             if trainer_id is not None:
                 pokemon_objs, trainer_obj = Pokemon.get_trainer(
                     trainer_id
@@ -300,6 +300,99 @@ def create_app(config_name):
             )
 
             response.status_code = 200
+
+            return response
+
+        elif request.method == "PUT":
+            trainer_id = request.args.get("trainerId", default=None, type=str)
+            firstName = request.args.get("firstName", default=None, type=str)
+            lastName = request.args.get("lastName", default=None, type=str)
+            dateOfBirth = request.args.get("dateOfBirth", default=None, type=str)
+
+            if trainer_id is None:
+                response = jsonify({"success": False, "error": "No trainers found"})
+                response.status_code = 404
+
+                return response
+
+            trainer = Trainer.get_trainer(trainer_id)
+
+            if firstName is not None:
+                trainer.firstName = firstName
+            if lastName is not None:
+                trainer.lastName = lastName
+            if dateOfBirth is not None:
+                trainer.dateOfBirth = dateOfBirth
+
+            try:
+                "trying to save"
+                trainer.save()
+            except:
+                message = f"Unable to update {trainer_id}"
+                response = jsonify({"success": False, "error": message})
+                response.status_code = 400
+
+                return response
+
+            response = jsonify({"success": True})
+            response.status_code = 200
+
+            return response
+        elif request.method == "DELETE":
+            # trainer = Trainer.query.filter(Trainer.id == id).first()
+            trainer = Trainer.get_trainer(trainer_id)
+            if not trainer:
+                abort(404)
+
+            try:
+                trainer.delete()
+            except:
+                response = jsonify(
+                    {"success": False, "error": "Unable to delete trainer"}
+                )
+                response.status_code = 400
+
+                return response
+
+            response = jsonify({"success": True})
+            response.status_code = 200
+
+            return response
+
+    @app.route("/trainer/create/", methods=["POST"])
+    def create_trainer():
+        if request.method == "POST":
+            trainer_id = request.args.get("trainerId", default=None, type=str)
+            firstName = request.args.get("firstName", default=None, type=str)
+            lastName = request.args.get("lastName", default=None, type=str)
+            dateOfBirth = request.args.get("dateOfBirth", default=None, type=str)
+
+            # check if payload is valid
+            if None in [trainer_id, firstName, lastName, dateOfBirth]:
+                response = jsonify({"success": False, "error": "Invalid payload"})
+                response.status_code = 400
+
+                return response
+
+            trainer = Trainer(
+                id=trainer_id,
+                firstName=firstName,
+                lastName=lastName,
+                dateOfBirth=dateOfBirth,
+            )
+
+            try:
+                trainer.save()
+            except:
+                response = jsonify(
+                    {"success": False, "error": "Unable to create trainer"}
+                )
+                response.status_code = 400
+
+                return response
+
+            response = jsonify({"success": True})
+            response.status_code = 201
 
             return response
 
