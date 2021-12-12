@@ -82,7 +82,6 @@ class TrainerTestCase(unittest.TestCase):
             data={"trainerId": "trainer1"},
         )
         data = json.loads(res.get_data(as_text=True))
-        print(data)
         self.assertEqual(res.status_code, 200)
         self.assertIn("id", str(data))
         self.assertIn("firstName", str(data))
