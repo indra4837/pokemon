@@ -1,5 +1,12 @@
 # Release Notes
 
+# v1.1 - 13 Dec 2021
+
+## Bug Fixes
+
+- Date format fixed to DD-MM-YYYY
+- Error handling of corner cases for GET requests
+
 # v1.0 - 13 Dec 2021
 
 ## Added
