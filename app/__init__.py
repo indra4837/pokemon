@@ -5,6 +5,7 @@ import json
 
 import redis
 
+from flask_apidoc import ApiDoc
 from flask_api import FlaskAPI
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -25,6 +26,7 @@ def create_app(config_name):
     app.config.from_object(app_config[config_name])
     app.config.from_pyfile("config.py")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    doc = ApiDoc(app=app, folder_path="/home/indra/pokemon/docs")
     db.init_app(app)
     migrate = Migrate(app, db)
 
@@ -44,6 +46,24 @@ def create_app(config_name):
 
     @app.route("/upload/", methods=["POST"])
     def seeding():
+        """
+        @api {post} /upload Uploads file
+        @apiVersion 1.0.0
+        @apiName upload
+        @apiGroup Trainer
+
+        @apiParam {String}      type        Type of data uploaded
+        @apiParam {Object}      data        UTF8 encoded CSV file
+
+        @apiSuccess (201 Created) {String}    success     True of False
+        @apiSuccess (201 Created) {String}    error       Error message
+
+        @apiSuccessExample {json} Success-Response:
+            HTTP/1.1 201 Created
+            {
+                "success": True
+            }
+        """
         if request.method == "POST":
             dataType = request.data.get("type", "")
             f = request.files["data"]
@@ -230,6 +250,86 @@ def create_app(config_name):
 
     @app.route("/trainer/", methods=["GET", "PUT", "DELETE"])
     def get_trainers():
+        """
+        @api {get} /trainer Gets trainer
+        @apiVersion 1.0.0
+        @apiName GetTrainer
+        @apiGroup Trainer
+
+        @apiParam {String}      trainerId       Id of trainer
+
+        @apiSuccess (200 OK) {String}    firstName       True of False
+        @apiSuccess (200 OK) {String}    error           Error message
+
+        @apiSuccessExample Success-Response:
+            HTTP/1.1 {json} 200 OK
+            {
+                "firstName": "Ash",
+                "lastName": "Ketchum",
+                "pokemons": [{"id": "pika1",
+                            "nickname": "pikapika",
+                            "species": "pikachu",
+                            "level": 10,
+                            "owner": "trainer1",
+                            "dateOfOwnership": "25-12-2021"}]
+            }
+        """
+        """
+        @api {get} /trainer Gets list of trainers
+        @apiVersion 1.0.0
+        @apiName GetTrainers
+        @apiGroup Trainer
+
+        @apiParam {String}      [page=1]          Page number
+        @apiParam {String}      [limit=5]         Results limit per page
+
+        @apiSuccess (200 OK) {Object}    trainers        Trainer object
+        @apiSuccess (200 OK) {String}    page            Page Number
+        @apiSuccess (200 OK) {String}    total_page      Total Page Number
+
+        @apiSuccessExample Success-Response:
+            HTTP/1.1 {json} 200 OK
+            {
+                "page": "1",
+                "total_page": "4",
+                "trainers": [{"id": "pika1",
+                            "firstName": "pikapika",
+                            "lastName": "pikachu",
+                            "dateOfBirth": "25-12-2021"}]
+            }
+        """
+        """
+        @api {put} /trainer Updates trainer data
+        @apiVersion 1.0.0
+        @apiName UpdateTrainer
+        @apiGroup Trainer
+
+        @apiParam {String}      trainerId     ID of trainer
+
+        @apiSuccess (200 OK) {Boolean}   success         True of False
+
+        @apiSuccessExample Success-Response:
+            HTTP/1.1 {json} 200 OK
+            {
+                "success": True,
+            }
+        """
+        """
+        @api {delete} /trainer Delete trainer data
+        @apiVersion 1.0.0
+        @apiName DeleteTrainer
+        @apiGroup Trainer
+
+        @apiParam {String}      trainerId     ID of trainer
+
+        @apiSuccess (200 OK) {Boolean}   success         True of False
+
+        @apiSuccessExample Success-Response:
+            HTTP/1.1 {json} 200 OK
+            {
+                "success": True,
+            }
+        """
         trainer_id = request.args.get("trainerId", default=None, type=str)
         if request.method == "GET":
             if trainer_id is not None:
@@ -366,6 +466,25 @@ def create_app(config_name):
 
     @app.route("/trainer/create/", methods=["POST"])
     def create_trainer():
+        """
+        @api {post} /trainer/create Create new trainer
+        @apiVersion 1.0.0
+        @apiName CreateTrainer
+        @apiGroup Trainer
+
+        @apiParam {String}      trainerId     ID of trainer
+        @apiParam {String}      firstName     First name of trainer
+        @apiParam {String}      lastName      Last Name of trainer
+        @apiParam {String}      dateOfBirth   Date of birth of trainer
+
+        @apiSuccess (201 Created) {Boolean}   success         True of False
+
+        @apiSuccessExample Success-Response:
+            HTTP/1.1 {json} 201 OK
+            {
+                "success": True,
+            }
+        """
         if request.method == "POST":
             trainer_id = request.args.get("trainerId", default=None, type=str)
             firstName = request.args.get("firstName", default=None, type=str)
@@ -403,6 +522,27 @@ def create_app(config_name):
 
     @app.route("/pokemon/create/", methods=["POST"])
     def create_pokemon():
+        """
+        @api {post} /pokemon/create Create new Pokemon
+        @apiVersion 1.0.0
+        @apiName CreatePokemon
+        @apiGroup Pokemon
+
+        @apiParam {String}      pokemonId           ID of pokemon
+        @apiParam {String}      nickname            Nickname of pokemon
+        @apiParam {String}      species             Species of pokemon
+        @apiParam {String}      level               Level of pokemon
+        @apiParam {String}      owner               Owner of pokemon
+        @apiParam {String}      dateOfOwnership     Date of ownership of pokemon
+
+        @apiSuccess (201 Created) {Boolean}   success         True of False
+
+        @apiSuccessExample Success-Response:
+            HTTP/1.1 {json} 201 OK
+            {
+                "success": True,
+            }
+        """
         if request.method == "POST":
             pokemon_id = request.args.get("pokemonId", default=None, type=str)
             nickname = request.args.get("nickname", default=None, type=str)
@@ -447,12 +587,106 @@ def create_app(config_name):
 
     @app.route("/pokemon/", methods=["GET", "PUT", "DELETE"])
     def get_pokemon():
+        """
+        @api {get} /pokemon Gets list of pokemon
+        @apiVersion 1.0.0
+        @apiName GetPokemons
+        @apiGroup Pokemon
+
+        @apiParam {String}               [page=1]          Page number
+        @apiParam {String}               [limit=5]         Results limit per page
+
+
+        @apiSuccess (200 OK) {String}    page            Page Number
+        @apiSuccess (200 OK) {String}    total_page      Total Page Number
+        @apiSuccess (200 OK) {Object}    pokemons        Pokemon object
+
+        @apiSuccessExample Success-Response:
+            HTTP/1.1 {json} 200 OK
+            {
+                "page": "1",
+                "total_page": "4",
+                "pokemons": [
+                    {"id": "pika1",
+                    "nickname": "pikapika",
+                    "species": "pikachu",
+                    "level": 10,
+                    "owner": "trainer1",
+                    "dateOfOwnership": "25-12-2021"}
+                ]
+            }
+        """
+        """
+        @api {get} /pokemon Get a pokemon
+        @apiVersion 1.0.0
+        @apiName GetPokemon
+        @apiGroup Pokemon
+
+        @apiParam {String}               pokemonId           Id of Pokemon
+
+        @apiSuccess (200 OK) {String}    id                  Id of Pokemon
+        @apiSuccess (200 OK) {String}    nickname            Nickname of Pokemon
+        @apiSuccess (200 OK) {String}    species             species of Pokemon
+        @apiSuccess (200 OK) {String}    level               level of Pokemon
+        @apiSuccess (200 OK) {String}    owner               owner of Pokemon
+        @apiSuccess (200 OK) {String}    dateOfOwnership     dateOfOwnership of Pokemon
+
+        @apiSuccessExample Success-Response:
+            HTTP/1.1 {json} 200 OK
+            {
+                "page": "1",
+                "total_page": "4",
+                "pokemons": [
+                    {"id": "pika1",
+                    "nickname": "pikapika",
+                    "species": "pikachu",
+                    "level": "1",
+                    "owner": "pikachu",
+                    "dateOfOwnership": "25-12-2021"}
+                ]
+            }
+        """
+        """
+        @api {put} /pokemon Updates pokemon data
+        @apiVersion 1.0.0
+        @apiName UpdatePokemon
+        @apiGroup Pokemon
+
+        @apiParam {String}               pokemonId       ID of pokemon
+
+        @apiSuccess (200 OK) {Boolean}   success         True of False
+
+        @apiSuccessExample Success-Response:
+            HTTP/1.1 {json} 200 OK
+            {
+                "success": True,
+            }
+        """
+        """
+        @api {delete} /pokemon Delete pokemon data
+        @apiVersion 1.0.0
+        @apiName DeletePokemon
+        @apiGroup Pokemon
+
+        @apiParam {String}               pokemonId       ID of pokemon
+
+        @apiSuccess (200 OK) {Boolean}   success         True of False
+
+        @apiSuccessExample Success-Response:
+            HTTP/1.1 {json} 200 OK
+            {
+                "success": True,
+            }
+        """
         pokemon_id = request.args.get("pokemonId", default=None, type=str)
         if request.method == "GET":
             if pokemon_id is not None:
                 pokemon = Pokemon.get_pokemon(pokemon_id)
                 if not pokemon:
-                    abort(404)
+                    response = jsonify("No Pokemon found")
+                    response.status_code = 404
+
+                    return response
 
                 if len(pokemon) == 0:
                     response = jsonify("No Pokemon found")
@@ -575,6 +809,26 @@ def create_app(config_name):
 
     @app.route("/exchange/", methods=["POST"])
     def exchange():
+        """
+        @api {post} /exchange Exchange pokemons between 2 trainers
+        @apiSampleRequest http://pokemons.com/api/exchange/?trainerA=trainer1&trainerB=trainer2&pokemonsA=pika1,pika2,pika3&pokemonsB=pikapika1,pikapika2
+        @apiVersion 1.0.0
+        @apiName ExchangePokemons
+        @apiGroup Pokemon
+
+        @apiParam {String}      trainerA     ID of trainer A
+        @apiParam {String}      trainerB     ID of trainer B
+        @apiParam {String}      pokemonsA    List of pokemons from trainer A
+        @apiParam {String}      pokemonsB    List of pokemons from trainer B
+
+        @apiSuccess (200 OK) {Boolean}   success         True of False
+
+        @apiSuccessExample Success-Response:
+            HTTP/1.1 {json} 200 OK
+            {
+                "success": True,
+            }
+        """
         if request.method == "POST":
             trainerA = request.args.get("trainerA", default=None, type=str)
             trainerB = request.args.get("trainerB", default=None, type=str)
