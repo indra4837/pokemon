@@ -153,4 +153,4 @@ After running the API endpoints, you can test them via the browser by visiting t
 
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Distributed under the MIT License. See `LICENSE` for more information.
