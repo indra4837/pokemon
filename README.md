@@ -120,12 +120,12 @@ After running the API endpoints, you can test them via the browser by visiting t
 
 ## Roadmap
 
-1. [] Containerize solution into Docker
-2. [] Refactor codebase into Divisional Structure
-3. [] Implement Caching to improve query speed for scalability
-    * [] Cache results of queries for faster future read speeds
-    * [] Implement caching eviction policies to prevent bloated cache
-4. [] Horizontal scaling with more servers, load balances and master-slave DB
+1. Containerize solution into Docker
+2. Refactor codebase into Divisional Structure
+3. Implement Caching to improve query speed for scalability
+    * Cache results of queries for faster future read speeds
+    * Implement caching eviction policies to prevent bloated cache
+4. Horizontal scaling with more servers, load balances and master-slave DB
 
 ## Future Architecture Revamp
 
