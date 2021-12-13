@@ -1,19 +1,25 @@
 # Pokemon
 
-<div id="top"></div>
+<!-- <div id="top"></div>
 <h1 align="center">Pokemon</h3>
-
-  <p align="center">
+ -->
+<!--   <p align="center">
     API Endpoints for Trainer and Pokemon
     <br />
     <a href="./docs/index.html"><strong>Explore the docs »</strong></a>
 </div>
-
+ -->
 <!-- ABOUT THE PROJECT -->
 
 ## About The Project
 
 API Endpoints for Trainer and Pokemon to perform basic CRUD operations and exchange pokemons
+
+## API Endpoints documentation
+```
+# open docs/index.html with your favourite browser
+$ firefox docs/index/html
+```
 
 ## Tech Used
 
