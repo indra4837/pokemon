@@ -1,6 +1,6 @@
 import csv
 import io
-import datetime
+from datetime import datetime
 import json
 
 import redis
@@ -33,7 +33,7 @@ def create_app(config_name):
     def validate_date(date_text):
         """Helper function to validate date format"""
         try:
-            datetime.datetime.strptime(date_text, "%d-%m-%Y")
+            datetime.strptime(date_text, "%d-%m-%Y")
         except:
             return False
 
@@ -339,7 +339,7 @@ def create_app(config_name):
 
                 pokemons = []
 
-                if len(pokemon_objs) == 0:
+                if trainer_obj is None:
                     response = jsonify("No trainer found")
                     response.status_code = 404
 
@@ -352,7 +352,7 @@ def create_app(config_name):
                         "species": obj.species,
                         "level": obj.level,
                         "owner": obj.owner,
-                        "dateOfOwnership": obj.dateOfOwnership,
+                        "dateOfOwnership": obj.dateOfOwnership.strftime("%d-%m-%Y"),
                     }
                     # trainer_obj = {
                     #     "id": i.owner,
@@ -389,7 +389,7 @@ def create_app(config_name):
                     "id": trainer.id,
                     "firstName": trainer.firstName,
                     "lastName": trainer.lastName,
-                    "dateOfBirth": trainer.dateOfBirth,
+                    "dateOfBirth": trainer.dateOfBirth.strftime("%d-%m-%Y"),
                 }
                 results.append(obj)
 
@@ -688,11 +688,7 @@ def create_app(config_name):
 
                     return response
 
-                if len(pokemon) == 0:
-                    response = jsonify("No Pokemon found")
-                    response.status_code = 404
-
-                    return response
+                # date_object = datetime.strptime(date_string, "%d %B, %Y")
 
                 poke_obj = {
                     "id": pokemon.id,
@@ -700,7 +696,7 @@ def create_app(config_name):
                     "species": pokemon.species,
                     "level": pokemon.level,
                     "owner": pokemon.owner,
-                    "dateOfOwnership": pokemon.dateOfOwnership,
+                    "dateOfOwnership": pokemon.dateOfOwnership.strftime("%d-%m-%Y"),
                 }
 
                 response = jsonify(poke_obj)
@@ -723,7 +719,7 @@ def create_app(config_name):
                     "species": pokemon.species,
                     "level": pokemon.level,
                     "owner": pokemon.owner,
-                    "dateOfOwnership": pokemon.dateOfOwnership,
+                    "dateOfOwnership": pokemon.dateOfOwnership.strftime("%d-%m-%Y"),
                 }
                 results.append(obj)
 
