@@ -1,0 +1,7 @@
+{
+    "name": "Pokemon, Gotta Catch 'Em All",
+    "version": "1.0.0",
+    "description": "API endpoints for pokemon and trainer",
+    "title": "Pokemon and Trainers",
+    "url" : "http://localhost:5000"
+  }
