@@ -1,14 +1,5 @@
 # Pokemon
 
-<!-- <div id="top"></div>
-<h1 align="center">Pokemon</h3>
- -->
-<!--   <p align="center">
-    API Endpoints for Trainer and Pokemon
-    <br />
-    <a href="./docs/index.html"><strong>Explore the docs »</strong></a>
-</div>
- -->
 <!-- ABOUT THE PROJECT -->
 
 ## About The Project
@@ -18,23 +9,42 @@ API Endpoints for Trainer and Pokemon to perform basic CRUD operations and excha
 ## API Endpoints documentation
 ```
 # open docs/index.html with your favourite browser
-$ firefox docs/index/html
+$ firefox docs/index.html
 ```
+
+## Screenshot of documentation
+
+![Screenshot](images/documentation.png)
+
+## Development Methodology
+
+Test driven development (TDD) with unittesting. 
+
+Unittests for each routes are created before development and iteratively tested to ensure routes passes each tests. 
 
 ## Tech Used
 
-- FlaskAPI as RESTful API endpoints
-- Postgres as relational database
-- SQLAlchemy as ORM
-- Redis as Cache
+1. FlaskAPI as RESTful API endpoints
+2. Postgres as relational database
+3. SQLAlchemy as ORM
+4. Redis as in-memory cache
 
-Since trainer and pokemon are related via owner variable, we use relational database to map this relation. Redis caching mechanism is used to cache rows of data that are read from the CSV after validation. This allows us to perform the upload as a transaction after validating all the rows in the CSV.
+- Since trainer and pokemon are related via owner variable, we use a relational database to map this relation. This allows us to use join operations to query from the database as compared to a NoSQL database. 
+- Redis caching mechanism is used to cache rows of data that are read from the CSV after validation. This allows us to perform the upload as a transaction after validating all the rows in the CSV. 
+- Having an in-memory cache allows for faster read speeds as compared to having data on disk. This allows us to scale the program in the future with more daily active users (DAU) as the queries per second (QPS) will also increase.
+
+NOTE: 
+- RDBMS adheres to ACID principles and should be able to provide transaction functionality by default (atomicity). 
+- However, we are implementing upload as a transaction using Redis Cache to allow faster queries in the future
+- Thus, Redis Cache will be populated with current data during seeding stage
 
 ### Architecture
 
 Current architecture with single server and single master db.
 
-NOTE: Cache is only used to implement upload as a transaction. Future plans to use cache to improve query speed
+NOTE: 
+- Cache is only used to implement upload as a transaction
+- Future plans to use cache to improve query speed
 
 ![Arch](images/systemArch.png)
 
@@ -66,7 +76,11 @@ $ source venv/bin/activate
 2. Install dependencies for this project
 
 ```
+# python packages
 $ pip install -r requirements.txt
+
+# apidocs for automatic documentation (require npm)
+$ npm install apidoc -g
 ```
 
 3. Place the following variables in `.env` file
@@ -103,7 +117,19 @@ $ flask db migrate
 $ flask db upgrade
 ```
 
-7. Start redis-server and run flask app
+7. Generate documentations via apidoc
+```
+# generate apidocs
+$ python manage.py apidoc
+
+# generate apidocs static assets
+$ apidoc -i app/ -o docs/
+
+# fire up documentation on your favourite browser
+$ firefox docs/index.html
+```
+
+8. Start redis-server and run flask app
 
 ```
 # In another terminal
@@ -118,20 +144,18 @@ $ flask run
 
 After running the API endpoints, you can test them via the browser by visiting the routes or using [Postman](http://postman.com).
 
-## Screenshot of documentation
-
-![Screenshot](images/documentation.png)
-
 <!-- ROADMAP -->
 
 ## Roadmap
 
 1. Containerize solution into Docker
-2. Refactor codebase into Divisional Structure
-3. Implement Caching to improve query speed for scalability
+2. Refactor codebase into Divisional Structure based on type of program (pokemon,trainer etc.)
+3. More unittests to cover edge cases and provide ~100% code coverage (routes code)
+4. Implement Caching to improve query speed for scalability
     * Cache results of queries for faster future read speeds
-    * Implement caching eviction policies to prevent bloated cache
-4. Horizontal scaling with more servers, load balances and master-slave DB
+    * For every query: if result in cache then return, else query from database
+    * Implement caching expiration/eviction policies to prevent stale/bloated cache
+5. Horizontal scaling with more servers, load balancers and master-slave DB
 
 ## Future Architecture Revamp
 
