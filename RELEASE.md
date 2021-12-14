@@ -1,5 +1,10 @@
 # Release Notes
 
+# v1.2 - 14 Dec 2021
+## Added
+
+- Documentation and images
+
 # v1.1 - 13 Dec 2021
 
 ## Bug Fixes
