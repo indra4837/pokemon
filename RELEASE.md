@@ -1,5 +1,10 @@
 # Release Notes
 
+# v1.3 - 14 Dec 2021
+## Bug Fixes
+
+- Added instance folder with config file into tracked files
+
 # v1.2 - 14 Dec 2021
 ## Added
 
